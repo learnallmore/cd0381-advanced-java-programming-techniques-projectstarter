@@ -30,13 +30,23 @@ final class WordCounts {
    /*
    在stream的collect步骤里,使用Collectors.toMap将元素转化为map,所以需要提供map的keyMapper和valueMapper作为参数,
    即键值对,因为元素是Map.Entry类型的，所以使用Map.Entry的方法引用
+
+   If the stream is parallel, and the Collector is concurrent,
+   and either the stream is unordered or the collector is unordered,
+   then a concurrent reduction will be performed (see Collector for details on concurrent reduction.)
+
+   toMap里的mergeFunction,即当collect到重复的key值时,处理values的函数,这里使用相加
+
+   toMap方法在并发状态下不保证按照sorted方法排好序的映射在收集时仍保证顺序,
+   所以可以用该方法的参数mapSupplier - a function which returns a new, empty Map into which the results will be inserted
    * */
+
     Map<String, Integer> topCounts =
             wordCountSet
                         .stream()
                         .sorted(new WordCountComparator())
                         .limit(Math.min(popularWordCount,wordCounts.size()))
-                        .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue));
+                        .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue,(kv1,kv2)->kv1+kv2,LinkedHashMap::new));
     return topCounts;
 //    PriorityQueue<Map.Entry<String, Integer>> sortedCounts =
 //        new PriorityQueue<>(wordCounts.size(), new WordCountComparator());
