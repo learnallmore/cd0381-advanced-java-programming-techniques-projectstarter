@@ -112,7 +112,7 @@ final class ParallelWebCrawler implements WebCrawler {
     Map<String, Integer> counts = new ConcurrentHashMap<>();
 //  Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
     Set<String> visitedUrls = new HashSet<>();
-    for(String url:startingUrls){//forkjoinpool执行
+    for(String url:startingUrls){//forkJoinPool执行
       pool.invoke(new CrawlRecursiveAction(url,deadline,maxDepth,counts,visitedUrls));
     }
     //并行执行结束后
