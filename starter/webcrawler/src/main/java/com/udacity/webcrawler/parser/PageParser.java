@@ -60,6 +60,7 @@ public interface PageParser {
       /**
        * Increments the frequency counter for the given word.
        */
+      @Profiled
       void addWord(String word) {
         Objects.requireNonNull(word);
         wordCounts.compute(word, (k, v) -> (v == null) ? 1 : v + 1);
@@ -68,6 +69,7 @@ public interface PageParser {
       /**
        * Adds the given link, if it has not already been added.
        */
+      @Profiled
       void addLink(String link) {
         links.add(Objects.requireNonNull(link));
       }

@@ -24,6 +24,9 @@ final class PageParserFactoryImpl implements PageParserFactory {
     this.timeout = timeout;
   }
 
+
+  //工厂实现类提供创建PageParser的方法,所以在工厂实现类要提供PageParserImpl构造器需要的一些参数,在这里是timeout,ignorewords
+  // url在使用PageParser时赋值
   @Override
   public PageParser get(String url) {
     // Here, parse the page with the initial timeout (instead of just the time remaining), to make

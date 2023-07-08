@@ -88,7 +88,7 @@ final class PageParserImpl implements PageParser {
               .filter(s -> ignoredWords.stream().noneMatch(p -> p.matcher(s).matches()))
               .map(s -> NON_WORD_CHARACTERS.matcher(s).replaceAll(""))
               .map(String::toLowerCase)
-              .forEach(builder::addWord);
+              .forEach(builder::addWord);//在页面遍历时增加wordcount
           return;
         }
         if (!(node instanceof Element)) {

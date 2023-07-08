@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  */
 final class ParallelWebCrawler implements WebCrawler {
   private final Clock clock;
-  private final PageParserFactory parserFactory;
+  private final PageParserFactory parserFactory;//crawler需要用到parser
   private final Duration timeout;
   private final int popularWordCount;
   private final int maxDepth;
@@ -68,19 +68,20 @@ final class ParallelWebCrawler implements WebCrawler {
 
     @Override
     protected void compute() {
-      if (maxDepth == 0 || clock.instant().isAfter(deadline)) {
+      if (maxDepth == 0 || clock.instant().isAfter(deadline)) {//递归退出条件,剩余深度为0或本次解析超时,直接返回
         return;
       }
-      for (Pattern pattern : ignoredUrls) {
+      for (Pattern pattern : ignoredUrls) {//不需要该url,直接返回
         if (pattern.matcher(url).matches()) {
           return;
         }
       }
-      if (visitedUrls.contains(url)) {
+      if (visitedUrls.contains(url)) {//已经访问过,直接返回
         return;
       }
       visitedUrls.add(url);
       //拿到当前url的result
+      //通过parserFactory.get(url)拿到parser
       PageParser.Result result = parserFactory.get(url).parse();
       for (Map.Entry<String, Integer> e : result.getWordCounts().entrySet()) {
         if (counts.containsKey(e.getKey())) {
@@ -97,11 +98,12 @@ final class ParallelWebCrawler implements WebCrawler {
 //      for(ConcurrentHashMap.Entry<String, Integer> e : result.getWordCounts().entrySet()){
 //        counts.compute(e.getKey(),(k,v)->(v==null)?e.getValue():v+e.getValue());
 //      }
+
       List<CrawlRecursiveAction> actions = new ArrayList<>();
-      for(String url : result.getLinks()){
+      for(String url : result.getLinks()){//根据解析器返回的新的url链接,再创建新的recursiveAction
         actions.add(new CrawlRecursiveAction(url,deadline,maxDepth-1,counts,visitedUrls));
       }
-      invokeAll(actions);
+      invokeAll(actions);//invokeAll参数为Collection<T> tasks,T为the type of the values returned from the tasks
     }
 
   }
@@ -109,8 +111,7 @@ final class ParallelWebCrawler implements WebCrawler {
   @Override
   public CrawlResult crawl(List<String> startingUrls) {
     Instant deadline = clock.instant().plus(timeout);
-    Map<String, Integer> counts = new ConcurrentHashMap<>();
-//  Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
+    Map<String, Integer> counts = new ConcurrentHashMap<>();//并发集合
     Set<String> visitedUrls = new HashSet<>();
     for(String url:startingUrls){//forkJoinPool执行
       pool.invoke(new CrawlRecursiveAction(url,deadline,maxDepth,counts,visitedUrls));

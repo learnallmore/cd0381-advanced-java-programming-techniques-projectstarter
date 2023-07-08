@@ -33,6 +33,7 @@ public final class WebCrawlerMain {
   private Profiler profiler;
 
   private void run() throws Exception {
+    //注入WebCrawelerMain需要注入的字段,crawler与profiler
     Guice.createInjector(new WebCrawlerModule(config), new ProfilerModule()).injectMembers(this);
 
     CrawlResult result = crawler.crawl(config.getStartPages());
@@ -47,6 +48,14 @@ public final class WebCrawlerMain {
     }
 
     // TODO: Write the profile data to a text file (or System.out if the file name is empty)
+    if(!config.getProfileOutputPath().equals("")){//或者用isEmpty()
+      Path path = Path.of(config.getProfileOutputPath());
+
+      profiler.writeData(path);
+    }else{
+      //OutputStreamWriter构造器的参数为OutputStream,实现将System.out转化为Writer
+      profiler.writeData(new OutputStreamWriter(System.out));
+    }
   }
 
   public static void main(String[] args) throws Exception {

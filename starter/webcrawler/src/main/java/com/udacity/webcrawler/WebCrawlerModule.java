@@ -61,7 +61,7 @@ public final class WebCrawlerModule extends AbstractModule {
         new ParserModule.Builder()
             .setTimeout(config.getTimeout())
             .setIgnoredWords(config.getIgnoredWords())
-            .build());
+            .build());//将配置以参数形式传入解析器的构造方法,实现依赖的注入
   }
 
   @Provides
